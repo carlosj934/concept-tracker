@@ -5,6 +5,7 @@ import (
 	"fmt"
 	
 	"concept-tracker/config"
+	"concept-tracker/internal/handler"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,6 +28,8 @@ func New(c *config.Config) (*Server, error) {
 		router: gin.Default(),
 		db: p,
 	}
+
+	handler.RegisterHealthRoutes(s.router)
 
 	return s, nil
 }
