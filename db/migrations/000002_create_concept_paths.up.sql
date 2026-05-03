@@ -1,6 +1,6 @@
 CREATE TABLE concept_paths (
-  ancestor_id UUID REFERENCES concepts(id),
-  descendant_id UUID REFERENCES concepts(id),
+  ancestor_id UUID REFERENCES concepts(id) ON DELETE CASCADE,
+  descendant_id UUID REFERENCES concepts(id) ON DELETE CASCADE,
   depth INT,
   PRIMARY KEY (ancestor_id, descendant_id)
 );
