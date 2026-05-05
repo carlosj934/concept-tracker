@@ -2,6 +2,7 @@ package domain
 
 import (
 	"time"
+	"errors"
 )
 
 type Concept struct {
@@ -19,3 +20,10 @@ type ConceptPath struct {
 	DescendantID string
 	Depth int64
 }
+
+type ConceptWithChildren struct {
+	Concept
+	Children []Concept
+}
+
+var ErrNotFound = errors.New("not found")
