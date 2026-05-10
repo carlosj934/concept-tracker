@@ -6,6 +6,7 @@ import (
 
 	"concept-tracker/internal/domain"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
 )
 
 type ConceptRepository interface {
@@ -16,6 +17,7 @@ type ConceptRepository interface {
 	Update(ctx context.Context, userID string, id string, name string, description *string) (domain.Concept, error) 
 	Move(ctx context.Context, userID string, id string, newParentID *string) error
 	Delete(ctx context.Context, userID string, id string) error
+	ListRoots(ctx context.Context, userID string) ([]domain.Concept, error)
 }
 
 type postgresConceptRepository struct {
@@ -44,35 +46,10 @@ func (r *postgresConceptRepository) Create(ctx context.Context, userID string, c
 	if err != nil {
 		return domain.Concept{}, err 
 	}
-	
-	if concept.ParentID == nil {
-		_, err = tx.Exec(ctx, `
-		INSERT INTO concept_paths (ancestor_id, descendant_id, depth)
-		VALUES ($1, $2, $3)
-		`, id, id, 0)
-		if err != nil {
-			return domain.Concept{}, err
-		}
-	} else {
-		// self row
-		_, err = tx.Exec(ctx, `
-		INSERT INTO concept_paths (ancestor_id, descendant_id, depth)
-		VALUES($1, $2, $3)
-		`, id, id, 0)
-		if err != nil {
-			return domain.Concept{}, err
-		}
-		
-		// ancestor row
-		_, err = tx.Exec(ctx, `
-		INSERT INTO concept_paths (ancestor_id, descendant_id, depth)
-		SELECT ancestor_id, $1, depth + 1
-		FROM concept_paths
-		WHERE descendant_id = $2
-		`, id, *concept.ParentID)
-		if err != nil {
-			return domain.Concept{}, err
-		}
+
+	err = insertClosurePaths(ctx, tx, id, concept.ParentID)
+	if err != nil {
+		return domain.Concept{}, err
 	}
 
 	err = tx.Commit(ctx)
@@ -89,6 +66,32 @@ func (r *postgresConceptRepository) Create(ctx context.Context, userID string, c
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}, nil
+}
+
+func insertClosurePaths(ctx context.Context, tx pgx.Tx, id string, parentID *string) error {
+	// self row
+	_, err := tx.Exec(ctx, `
+	INSERT INTO concept_paths (ancestor_id, descendant_id, depth)
+	VALUES ($1, $2, $3)
+	`, id, id, 0)
+	if err != nil {
+		return err
+	}
+
+	if parentID != nil {
+		// ancestor row
+		_, err = tx.Exec(ctx, `
+		INSERT INTO concept_paths (ancestor_id, descendant_id, depth)
+		SELECT ancestor_id, $1, depth + 1
+		FROM concept_paths
+		WHERE descendant_id = $2
+		`, id, *parentID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (r *postgresConceptRepository) GetByID(ctx context.Context, userID string, id string) (domain.Concept, error) {
@@ -173,7 +176,7 @@ func (r *postgresConceptRepository) GetSubtree(ctx context.Context, userID strin
 		var parentID, description *string
 		var createdAt, updatedAt time.Time
 
-		err := rows. Scan(&c.ID, &c.UserID, &parentID, &c.Name, &description, &createdAt, &updatedAt)
+		err := rows.Scan(&c.ID, &c.UserID, &parentID, &c.Name, &description, &createdAt, &updatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -233,7 +236,21 @@ func (r *postgresConceptRepository) Move(ctx context.Context, userID string, id 
 		return err
 	}
 
-	_, err = tx.Exec(ctx, `
+	err = rebuildClosurePaths(ctx, tx, id, newParentID)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func rebuildClosurePaths(ctx context.Context, tx pgx.Tx, id string, newParentID *string) error {
+	_, err := tx.Exec(ctx, `
 	DELETE FROM concept_paths
 	WHERE descendant_id IN (
 		SELECT descendant_id FROM concept_paths WHERE ancestor_id = $1
@@ -259,11 +276,6 @@ func (r *postgresConceptRepository) Move(ctx context.Context, userID string, id 
 		}
 	}
 
-	err = tx.Commit(ctx)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -280,4 +292,42 @@ func (r *postgresConceptRepository) Delete(ctx context.Context, userID string, i
 	}
 
 	return nil
+}
+
+func (r *postgresConceptRepository) ListRoots(ctx context.Context, userID string) ([]domain.Concept, error) {
+	rows, err := r.pool.Query(ctx, `
+	SELECT id, user_id, parent_id, name, description, created_at, updated_at
+	FROM concepts
+	WHERE user_id = $1 AND parent_id IS NULL
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var concepts []domain.Concept
+	for rows.Next() {
+		var c domain.Concept
+		var id, name string
+		var parentID, description *string
+		var createdAt, updatedAt time.Time
+
+		err := rows.Scan(&id, &userID, &parentID, &name, &description, &createdAt, &updatedAt)
+		if err != nil {
+			return nil, err
+		}
+		c.ID = id
+		c.UserID = userID
+		c.ParentID = parentID
+		c.Name = name
+		c.Description = description
+		c.CreatedAt = createdAt
+		c.UpdatedAt = updatedAt
+		concepts = append(concepts, c)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return concepts, nil
 }
