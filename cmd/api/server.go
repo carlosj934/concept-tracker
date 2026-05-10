@@ -6,6 +6,8 @@ import (
 	
 	"concept-tracker/config"
 	"concept-tracker/internal/handler"
+	"concept-tracker/internal/service"
+	"concept-tracker/internal/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -29,7 +31,12 @@ func New(c *config.Config) (*Server, error) {
 		db: p,
 	}
 
+	r := repository.New(p)
+	svc := service.NewConceptService(r)
+	h := handler.NewConceptHandler(svc)
+
 	handler.RegisterHealthRoutes(s.router)
+	handler.RegisterConceptRoutes(s.router, h)
 
 	return s, nil
 }
