@@ -8,9 +8,11 @@ import (
 	"concept-tracker/internal/handler"
 	"concept-tracker/internal/service"
 	"concept-tracker/internal/repository"
+	"concept-tracker/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/clerk/clerk-sdk-go/v2"
 )
 
 type Server struct {
@@ -20,6 +22,8 @@ type Server struct {
 }
 
 func New(c *config.Config) (*Server, error) {
+	clerk.SetKey(c.ClerkSecretKey)
+
 	p, err := pgxpool.New(context.Background(), c.DSN())
 	if err != nil {
 		return nil, err
@@ -31,12 +35,15 @@ func New(c *config.Config) (*Server, error) {
 		db: p,
 	}
 
+	v1 := s.router.Group("/api/v1", middleware.ClerkAuth())
+
 	r := repository.New(p)
 	svc := service.NewConceptService(r)
 	h := handler.NewConceptHandler(svc)
 
 	handler.RegisterHealthRoutes(s.router)
-	handler.RegisterConceptRoutes(s.router, h)
+	handler.RegisterConceptRoutes(v1, h)
+	handler.RegisterMeRoutes(v1)
 
 	return s, nil
 }
