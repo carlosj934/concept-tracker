@@ -9,15 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterConceptRoutes(router *gin.Engine, h *ConceptHandler) {
-	v1 := router.Group("/api/v1")
-	v1.GET("/concepts", h.ListRoots)
-	v1.GET("/concepts/:id", h.GetByID)
-	v1.GET("/concepts/:id/tree", h.GetSubtree)
-	v1.POST("/concepts", h.Create)
-	v1.PATCH("/concepts/:id", h.Update)
-	v1.PATCH("/concepts/:id/move", h.Move)
-	v1.DELETE("/concepts/:id", h.Delete)
+func RegisterConceptRoutes(router *gin.RouterGroup, h *ConceptHandler) {
+	router.GET("/concepts", h.ListRoots)
+	router.GET("/concepts/:id", h.GetByID)
+	router.GET("/concepts/:id/tree", h.GetSubtree)
+	router.POST("/concepts", h.Create)
+	router.PATCH("/concepts/:id", h.Update)
+	router.PATCH("/concepts/:id/move", h.Move)
+	router.DELETE("/concepts/:id", h.Delete)
 }
 
 type ConceptHandler struct {
@@ -30,11 +29,24 @@ func NewConceptHandler (service service.ConceptService) *ConceptHandler {
 	}
 }
 
-const USERID = "test-user"
+func getUserID(c *gin.Context) string {
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"error": gin.H{
+				"code": "FORBIDDEN",
+				"message": "forbidden",
+			},
+		})
+		return ""
+	}
+
+	return userID.(string)
+}
 
 func (h *ConceptHandler) ListRoots(c *gin.Context) {
 
-	l, err := h.service.ListRoots(c, USERID)
+	l, err := h.service.ListRoots(c, getUserID(c))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -46,7 +58,7 @@ func (h *ConceptHandler) ListRoots(c *gin.Context) {
 }
 
 func (h *ConceptHandler) GetByID(c *gin.Context) {
-	g, err := h.service.GetByID(c, USERID, c.Param("id"))
+	g, err := h.service.GetByID(c, getUserID(c), c.Param("id"))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -59,7 +71,7 @@ func (h *ConceptHandler) GetByID(c *gin.Context) {
 }
 
 func (h *ConceptHandler) GetSubtree(c *gin.Context) {
-	g, err := h.service.GetSubtree(c, USERID, c.Param("id"))
+	g, err := h.service.GetSubtree(c, getUserID(c), c.Param("id"))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -84,7 +96,7 @@ func (h *ConceptHandler) Create(c *gin.Context) {
 		return
 	}
 
-	create, err := h.service.Create(c, USERID, concept)
+	create, err := h.service.Create(c, getUserID(c), concept)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -114,7 +126,7 @@ func (h *ConceptHandler) Update(c *gin.Context) {
 		return
 	}
 	
-	u, err := h.service.Update(c, USERID, c.Param("id"), updateConcept.Name, updateConcept.Description)
+	u, err := h.service.Update(c, getUserID(c), c.Param("id"), updateConcept.Name, updateConcept.Description)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -143,7 +155,7 @@ func (h *ConceptHandler) Move(c *gin.Context) {
 		return
 	}
 
-	m := h.service.Move(c, USERID, c.Param("id"), moveConcept.NewParentID)
+	m := h.service.Move(c, getUserID(c), c.Param("id"), moveConcept.NewParentID)
 	if m != nil {
 		handleError(c, m)
 		return
@@ -153,7 +165,7 @@ func (h *ConceptHandler) Move(c *gin.Context) {
 }
 
 func (h *ConceptHandler) Delete(c *gin.Context) {
-	d := h.service.Delete(c, USERID, c.Param("id"))
+	d := h.service.Delete(c, getUserID(c), c.Param("id"))
 	if d != nil {
 		handleError(c, d)
 		return

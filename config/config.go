@@ -17,6 +17,9 @@ type Config struct {
 
 	// API
 	ServerPort int64
+
+	// Clerk
+	ClerkSecretKey string
 }
 
 func Load() (*Config, error) {
@@ -58,6 +61,8 @@ func Load() (*Config, error) {
 		return nil, errors.New("SERVERPORT must be a valid integer")
 	}
 
+	clerkSecretKey := os.Getenv("CLERK_SECRET_KEY")
+
 	c := &Config{
 		DBHost: dbHost,
 		DBPort: dbPortInt,
@@ -65,6 +70,7 @@ func Load() (*Config, error) {
 		DBPassword: dbPassword,
 		DBName: dbName,
 		ServerPort: serverPortInt,
+		ClerkSecretKey: clerkSecretKey,
 	}
 
 	return c, nil
