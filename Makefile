@@ -28,3 +28,7 @@ fix:
 .PHONY: build
 build:
 	go build -o bin/api ./cmd/api
+
+.PHONY: lint-migrations
+lint-migrations:
+	squawk db/migrations/*.sql

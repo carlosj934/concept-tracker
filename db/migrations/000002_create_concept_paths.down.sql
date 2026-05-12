@@ -1,1 +1,1 @@
-DROP TABLE concept_paths;
+DROP TABLE IF EXISTS concept_paths;

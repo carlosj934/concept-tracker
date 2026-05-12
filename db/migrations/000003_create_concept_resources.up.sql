@@ -1,4 +1,4 @@
-CREATE TABLE concept_resources (
+CREATE TABLE IF NOT EXISTS concept_resources (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   concept_id UUID NOT NULL,
   user_id TEXT NOT NULL,
@@ -11,6 +11,6 @@ CREATE TABLE concept_resources (
   FOREIGN KEY (concept_id) REFERENCES concepts(id) ON DELETE CASCADE
 );
 
-CREATE index idx_concept_resources ON concept_resources(concept_id);
+CREATE INDEX IF NOT EXISTS idx_concept_resources ON concept_resources(concept_id);
 
-CREATE index idx_concept_resources_user ON concept_resources(user_id);
+CREATE INDEX IF NOT EXISTS idx_concept_resources_user ON concept_resources(user_id);

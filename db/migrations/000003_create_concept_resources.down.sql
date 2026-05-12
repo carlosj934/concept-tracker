@@ -1,1 +1,1 @@
-DROP TABLE concept_resources;
+DROP TABLE IF EXISTS concept_resources;

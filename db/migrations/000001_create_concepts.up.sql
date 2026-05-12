@@ -1,4 +1,4 @@
-CREATE TABLE concepts (
+CREATE TABLE IF NOT EXISTS concepts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT NOT NULL,
   parent_id UUID REFERENCES concepts(id),
@@ -8,6 +8,6 @@ CREATE TABLE concepts (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_concepts_user_id ON concepts(user_id);
+CREATE INDEX IF NOT EXISTS idx_concepts_user_id ON concepts(user_id);
 
-CREATE INDEX idx_concepts_user_parent ON concepts(user_id, parent_id);
+CREATE INDEX IF NOT EXISTS idx_concepts_user_parent ON concepts(user_id, parent_id);
