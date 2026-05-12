@@ -1,1 +1,1 @@
-DROP TABLE concepts;
+DROP TABLE IF EXISTS concepts;

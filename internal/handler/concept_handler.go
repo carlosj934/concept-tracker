@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"concept-tracker/internal/service"
 	"concept-tracker/internal/domain"
+	"concept-tracker/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,7 +23,7 @@ type ConceptHandler struct {
 	service service.ConceptService
 }
 
-func NewConceptHandler (service service.ConceptService) *ConceptHandler {
+func NewConceptHandler(service service.ConceptService) *ConceptHandler {
 	return &ConceptHandler{
 		service: service,
 	}
@@ -34,7 +34,7 @@ func getUserID(c *gin.Context) string {
 	if !exists {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"error": gin.H{
-				"code": "FORBIDDEN",
+				"code":    "FORBIDDEN",
 				"message": "forbidden",
 			},
 		})
@@ -89,7 +89,7 @@ func (h *ConceptHandler) Create(c *gin.Context) {
 	if j != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": gin.H{
-				"code": "BAD_REQUEST",
+				"code":    "BAD_REQUEST",
 				"message": "bad request",
 			},
 		})
@@ -108,7 +108,7 @@ func (h *ConceptHandler) Create(c *gin.Context) {
 }
 
 type updateConceptRequest struct {
-	Name string `json:"name"`
+	Name        string  `json:"name"`
 	Description *string `json:"description"`
 }
 
@@ -119,13 +119,13 @@ func (h *ConceptHandler) Update(c *gin.Context) {
 	if j != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": gin.H{
-				"code": "BAD_REQUEST",
+				"code":    "BAD_REQUEST",
 				"message": "bad request",
 			},
 		})
 		return
 	}
-	
+
 	u, err := h.service.Update(c, getUserID(c), c.Param("id"), updateConcept.Name, updateConcept.Description)
 	if err != nil {
 		handleError(c, err)
@@ -148,7 +148,7 @@ func (h *ConceptHandler) Move(c *gin.Context) {
 	if j != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": gin.H{
-				"code": "BAD_REQUEST",
+				"code":    "BAD_REQUEST",
 				"message": "bad request",
 			},
 		})
@@ -178,17 +178,16 @@ func handleError(c *gin.Context, err error) {
 	if err == domain.ErrNotFound {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": gin.H{
-				"code": "NOT_FOUND",
+				"code":    "NOT_FOUND",
 				"message": "not found",
 			},
-		})	
+		})
 	} else {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": gin.H{
-				"code": "INTERNAL_SERVER_ERROR",
+				"code":    "INTERNAL_SERVER_ERROR",
 				"message": "internal server error",
 			},
 		})
 	}
 }
-

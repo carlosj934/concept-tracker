@@ -1,19 +1,19 @@
 package config
 
 import (
-	"os"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 )
 
 type Config struct {
 	// DB
-	DBHost string
-	DBPort int64
-	DBUser string
+	DBHost     string
+	DBPort     int64
+	DBUser     string
 	DBPassword string
-	DBName string 
+	DBName     string
 
 	// API
 	ServerPort int64
@@ -64,12 +64,12 @@ func Load() (*Config, error) {
 	clerkSecretKey := os.Getenv("CLERK_SECRET_KEY")
 
 	c := &Config{
-		DBHost: dbHost,
-		DBPort: dbPortInt,
-		DBUser: dbUser,
-		DBPassword: dbPassword,
-		DBName: dbName,
-		ServerPort: serverPortInt,
+		DBHost:         dbHost,
+		DBPort:         dbPortInt,
+		DBUser:         dbUser,
+		DBPassword:     dbPassword,
+		DBName:         dbName,
+		ServerPort:     serverPortInt,
 		ClerkSecretKey: clerkSecretKey,
 	}
 

@@ -1,6 +1,6 @@
 package handler
 
-import(
+import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"

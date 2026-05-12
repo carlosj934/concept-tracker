@@ -13,12 +13,12 @@ func ClerkAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c.Request = r
-			
+
 			claims, ok := clerk.SessionClaimsFromContext(r.Context())
 			if !ok {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"error": gin.H{
-						"code": "UNAUTHORIZED",
+						"code":    "UNAUTHORIZED",
 						"message": "unauthorized",
 					},
 				})
