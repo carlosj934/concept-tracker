@@ -3,22 +3,22 @@ package main
 import (
 	"context"
 	"fmt"
-	
+
 	"concept-tracker/config"
 	"concept-tracker/internal/handler"
-	"concept-tracker/internal/service"
-	"concept-tracker/internal/repository"
 	"concept-tracker/internal/middleware"
+	"concept-tracker/internal/repository"
+	"concept-tracker/internal/service"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/clerk/clerk-sdk-go/v2"
 )
 
 type Server struct {
-	cfg *config.Config
+	cfg    *config.Config
 	router *gin.Engine
-	db *pgxpool.Pool
+	db     *pgxpool.Pool
 }
 
 func New(c *config.Config) (*Server, error) {
@@ -30,9 +30,9 @@ func New(c *config.Config) (*Server, error) {
 	}
 
 	s := &Server{
-		cfg: c,
+		cfg:    c,
 		router: gin.Default(),
-		db: p,
+		db:     p,
 	}
 
 	v1 := s.router.Group("/api/v1", middleware.ClerkAuth())

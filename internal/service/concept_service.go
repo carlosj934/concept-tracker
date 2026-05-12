@@ -37,14 +37,14 @@ func (c conceptService) GetByID(ctx context.Context, userID string, id string) (
 		}
 		return domain.ConceptWithChildren{}, err
 	}
-	
+
 	g, err := c.repo.GetChildren(ctx, userID, id)
 	if err != nil {
 		return domain.ConceptWithChildren{}, err
 	}
 
 	return domain.ConceptWithChildren{
-		Concept: i,
+		Concept:  i,
 		Children: g,
 	}, nil
 }
@@ -54,7 +54,7 @@ func (c conceptService) ListRoots(ctx context.Context, userID string) ([]domain.
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return l, nil
 }
 
@@ -94,8 +94,8 @@ func (c conceptService) Move(ctx context.Context, userID string, id string, newP
 		}
 		return err
 	}
-	
-	return nil	
+
+	return nil
 }
 
 func (c conceptService) Delete(ctx context.Context, userID string, id string) error {

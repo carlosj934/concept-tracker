@@ -10,4 +10,4 @@ CREATE TABLE concepts (
 
 CREATE INDEX idx_concepts_user_id ON concepts(user_id);
 
-CREATE INDEX idx_concepts_user_parent ON concepts(parent_id);
+CREATE INDEX idx_concepts_user_parent ON concepts(user_id, parent_id);

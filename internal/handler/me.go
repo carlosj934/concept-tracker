@@ -12,7 +12,7 @@ func RegisterMeRoutes(router *gin.RouterGroup) {
 		if !exists {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"error": gin.H{
-					"code": "FORBIDDEN",
+					"code":    "FORBIDDEN",
 					"message": "forbidden",
 				},
 			})

@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"concept-tracker/internal/domain"
-	"github.com/jackc/pgx/v5/pgxpool"
+
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type ConceptRepository interface {
@@ -14,7 +15,7 @@ type ConceptRepository interface {
 	GetByID(ctx context.Context, userID string, id string) (domain.Concept, error)
 	GetChildren(ctx context.Context, userID string, id string) ([]domain.Concept, error)
 	GetSubtree(ctx context.Context, userID string, id string) ([]domain.Concept, error)
-	Update(ctx context.Context, userID string, id string, name string, description *string) (domain.Concept, error) 
+	Update(ctx context.Context, userID string, id string, name string, description *string) (domain.Concept, error)
 	Move(ctx context.Context, userID string, id string, newParentID *string) error
 	Delete(ctx context.Context, userID string, id string) error
 	ListRoots(ctx context.Context, userID string) ([]domain.Concept, error)
@@ -34,7 +35,7 @@ func (r *postgresConceptRepository) Create(ctx context.Context, userID string, c
 
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
-		return domain.Concept{}, err	
+		return domain.Concept{}, err
 	}
 	defer tx.Rollback(ctx)
 
@@ -44,7 +45,7 @@ func (r *postgresConceptRepository) Create(ctx context.Context, userID string, c
 	RETURNING id, created_at, updated_at
 	`, concept.UserID, concept.ParentID, concept.Name, concept.Description).Scan(&id, &createdAt, &updatedAt)
 	if err != nil {
-		return domain.Concept{}, err 
+		return domain.Concept{}, err
 	}
 
 	err = insertClosurePaths(ctx, tx, id, concept.ParentID)
@@ -58,13 +59,13 @@ func (r *postgresConceptRepository) Create(ctx context.Context, userID string, c
 	}
 
 	return domain.Concept{
-		ID: id,
-		UserID: userID,
-		ParentID: concept.ParentID,
-		Name: concept.Name,
+		ID:          id,
+		UserID:      userID,
+		ParentID:    concept.ParentID,
+		Name:        concept.Name,
 		Description: concept.Description,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
 	}, nil
 }
 
@@ -109,13 +110,13 @@ func (r *postgresConceptRepository) GetByID(ctx context.Context, userID string, 
 	}
 
 	return domain.Concept{
-		ID: i,
-		UserID: u,
-		ParentID: parentID,
-		Name: name,
+		ID:          i,
+		UserID:      u,
+		ParentID:    parentID,
+		Name:        name,
 		Description: description,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
 	}, nil
 }
 
@@ -195,7 +196,7 @@ func (r *postgresConceptRepository) GetSubtree(ctx context.Context, userID strin
 }
 
 func (r *postgresConceptRepository) Update(ctx context.Context, userID string, id string, name string, description *string) (domain.Concept, error) {
-	var u, i , n string
+	var u, i, n string
 	var d, parentID *string
 	var createdAt, updatedAt time.Time
 
@@ -208,15 +209,15 @@ func (r *postgresConceptRepository) Update(ctx context.Context, userID string, i
 	if err != nil {
 		return domain.Concept{}, err
 	}
-	
+
 	return domain.Concept{
-		ID: i,
-		UserID: u,
-		ParentID: parentID,
-		Name: n,
+		ID:          i,
+		UserID:      u,
+		ParentID:    parentID,
+		Name:        n,
 		Description: d,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
 	}, nil
 }
 
