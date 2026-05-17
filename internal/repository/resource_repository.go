@@ -92,6 +92,7 @@ func (r *postgresResourceRepository) Create(ctx context.Context, userID string, 
 }
 
 func (r *postgresResourceRepository) Update(ctx context.Context, userID string, id string, url *string, title *string) (domain.ConceptResource, error) {
+	// using individual letters to not overshadow input params
 	var URL, t, u, i, conceptID, provider, externalID string
 	var meta []byte
 	var createdAt time.Time
