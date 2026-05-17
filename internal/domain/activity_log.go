@@ -19,3 +19,9 @@ type Cursor struct {
 	LoggedAt time.Time
 	ID       string
 }
+
+type ActivityLogPage struct {
+	Data       []ActivityLog
+	NextCursor *string
+	HasMore    bool
+}
