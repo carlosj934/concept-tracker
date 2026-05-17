@@ -37,12 +37,20 @@ func New(c *config.Config) (*Server, error) {
 
 	v1 := s.router.Group("/api/v1", middleware.ClerkAuth())
 
-	r := repository.New(p)
-	svc := service.NewConceptService(r)
-	h := handler.NewConceptHandler(svc)
+	// concept repository / svc / handler
+	cr := repository.New(p)
+	csvc := service.NewConceptService(cr)
+	ch := handler.NewConceptHandler(csvc)
 
+	// resource repository / svc / handler
+	rr := repository.NewResource(p)
+	rsvc := service.NewResourceService(rr)
+	rh := handler.NewResourceHandler(rsvc)
+
+	// register routes
 	handler.RegisterHealthRoutes(s.router)
-	handler.RegisterConceptRoutes(v1, h)
+	handler.RegisterConceptRoutes(v1, ch)
+	handler.RegisterResourceRoutes(v1, rh)
 	handler.RegisterMeRoutes(v1)
 
 	return s, nil
