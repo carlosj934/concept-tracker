@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"log"
 
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/service"
@@ -196,6 +197,8 @@ func handleError(c *gin.Context, err error) {
 			},
 		})
 	} else {
+		log.Printf("error: %v", err)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": gin.H{
 				"code":    "INTERNAL_SERVER_ERROR",
