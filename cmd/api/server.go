@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"concept-tracker/config"
 	"concept-tracker/internal/handler"
@@ -29,6 +30,11 @@ func New(c *config.Config) (*Server, error) {
 		return nil, err
 	}
 
+	if err := p.Ping(context.Background()); err != nil {
+		return nil, fmt.Errorf("database unreachable: %w", err)
+	}
+	log.Printf("database connected successfully")
+
 	s := &Server{
 		cfg:    c,
 		router: gin.Default(),
@@ -37,12 +43,26 @@ func New(c *config.Config) (*Server, error) {
 
 	v1 := s.router.Group("/api/v1", middleware.ClerkAuth())
 
-	r := repository.New(p)
-	svc := service.NewConceptService(r)
-	h := handler.NewConceptHandler(svc)
+	// concept repository / svc / handler
+	cr := repository.New(p)
+	csvc := service.NewConceptService(cr)
+	ch := handler.NewConceptHandler(csvc)
 
+	// resource repository / svc / handler
+	rr := repository.NewResource(p)
+	rsvc := service.NewResourceService(rr)
+	rh := handler.NewResourceHandler(rsvc)
+
+	// activity log repository / svc / handler
+	ar := repository.NewActivityLog(p)
+	asvc := service.NewActivityLogService(ar)
+	ah := handler.NewActivityLogHandler(asvc)
+
+	// register routes
 	handler.RegisterHealthRoutes(s.router)
-	handler.RegisterConceptRoutes(v1, h)
+	handler.RegisterConceptRoutes(v1, ch)
+	handler.RegisterResourceRoutes(v1, rh)
+	handler.RegisterActivityLogRoutes(v1, ah)
 	handler.RegisterMeRoutes(v1)
 
 	return s, nil

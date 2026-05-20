@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"log"
 
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/service"
@@ -82,10 +83,17 @@ func (h *ConceptHandler) GetSubtree(c *gin.Context) {
 	})
 }
 
+type createConceptRequest struct {
+	ParentID    *string `json:"parent_id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+}
+
 func (h *ConceptHandler) Create(c *gin.Context) {
 	var concept domain.Concept
+	var conceptRequest createConceptRequest
 
-	j := c.ShouldBindJSON(&concept)
+	j := c.ShouldBindJSON(&conceptRequest)
 	if j != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": gin.H{
@@ -94,6 +102,12 @@ func (h *ConceptHandler) Create(c *gin.Context) {
 			},
 		})
 		return
+	}
+
+	concept = domain.Concept{
+		ParentID:    conceptRequest.ParentID,
+		Name:        conceptRequest.Name,
+		Description: conceptRequest.Description,
 	}
 
 	create, err := h.service.Create(c, getUserID(c), concept)
@@ -183,6 +197,8 @@ func handleError(c *gin.Context, err error) {
 			},
 		})
 	} else {
+		log.Printf("error: %v", err)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": gin.H{
 				"code":    "INTERNAL_SERVER_ERROR",
