@@ -66,6 +66,8 @@ func New(c *config.Config) (*Server, *worker.Worker, error) {
 
 	// reminder repository / svc / handler
 	rer := repository.NewReminder(p)
+	resvc := service.NewReminderService(rer)
+	reh := handler.NewReminderHandler(resvc)
 
 	// register routes
 	handler.RegisterHealthRoutes(s.router)
@@ -73,6 +75,7 @@ func New(c *config.Config) (*Server, *worker.Worker, error) {
 	handler.RegisterResourceRoutes(v1, rh)
 	handler.RegisterActivityLogRoutes(v1, ah)
 	handler.RegisterUserPreferencesRoutes(v1, uh)
+	handler.RegisterReminderRoutes(v1, reh)
 	handler.RegisterMeRoutes(v1)
 
 	// start worker

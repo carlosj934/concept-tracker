@@ -13,7 +13,7 @@ type ReminderRepository interface {
 	// user facing
 	ListConceptReminders(ctx context.Context, userID string, conceptID string) ([]domain.Reminder, error)
 	Create(ctx context.Context, conceptID string, userID string, reminder domain.Reminder) (domain.Reminder, error)
-	Update(ctx context.Context, userID string, id string, update updateReminderParams) (domain.Reminder, error)
+	Update(ctx context.Context, userID string, id string, update UpdateReminderParams) (domain.Reminder, error)
 	Delete(ctx context.Context, userID string, id string) error
 
 	// worker facing
@@ -21,7 +21,7 @@ type ReminderRepository interface {
 	AdvanceSchedule(ctx context.Context, id string, scheduledAt *time.Time, lastSentAt *time.Time, isActive bool) error
 }
 
-type updateReminderParams struct {
+type UpdateReminderParams struct {
 	Message     string
 	IsRecurring bool
 	CronExpr    *string
@@ -110,8 +110,11 @@ func (r *postgresReminderRepository) Create(ctx context.Context, conceptID strin
 	}, nil
 }
 
-func (r *postgresReminderRepository) Update(ctx context.Context, userID string, id string, update updateReminderParams) (domain.Reminder, error) {
-	var i, u, conceptID string
+func (r *postgresReminderRepository) Update(ctx context.Context, userID string, id string, update UpdateReminderParams) (domain.Reminder, error) {
+	var i, u, conceptID, message string
+	var isRecurring, isActive bool
+	var cronExpr *string
+	var scheduledAt *time.Time
 	var createdAt time.Time
 	var lastSentAt *time.Time
 
@@ -120,7 +123,7 @@ func (r *postgresReminderRepository) Update(ctx context.Context, userID string, 
 	SET message = $1, is_recurring = $2, cron_expr = COALESCE($3, cron_expr), scheduled_at = COALESCE($4, scheduled_at), is_active = $5
 	WHERE id = $6 AND user_id = $7
 	RETURNING id, user_id, concept_id, message, is_recurring, cron_expr, scheduled_at, last_sent_at, is_active, created_at
-	`, update.Message, update.IsRecurring, update.CronExpr, update.ScheduledAt, update.IsActive, id, userID).Scan(&i, &u, &conceptID, &update.Message, &update.IsRecurring, &update.CronExpr, &update.ScheduledAt, &lastSentAt, &update.IsActive, &createdAt)
+	`, update.Message, update.IsRecurring, update.CronExpr, update.ScheduledAt, update.IsActive, id, userID).Scan(&i, &u, &conceptID, &message, &isRecurring, &cronExpr, &scheduledAt, &lastSentAt, &isActive, &createdAt)
 	if err != nil {
 		return domain.Reminder{}, err
 	}
@@ -129,12 +132,12 @@ func (r *postgresReminderRepository) Update(ctx context.Context, userID string, 
 		ID:          i,
 		ConceptID:   conceptID,
 		UserID:      u,
-		Message:     update.Message,
-		IsRecurring: update.IsRecurring,
-		CronExpr:    update.CronExpr,
-		ScheduledAt: update.ScheduledAt,
+		Message:     message,
+		IsRecurring: isRecurring,
+		CronExpr:    cronExpr,
+		ScheduledAt: scheduledAt,
 		LastSentAt:  lastSentAt,
-		IsActive:    update.IsActive,
+		IsActive:    isActive,
 		CreatedAt:   createdAt,
 	}, nil
 
