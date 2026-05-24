@@ -10,6 +10,7 @@ import (
 	"concept-tracker/internal/middleware"
 	"concept-tracker/internal/repository"
 	"concept-tracker/internal/service"
+	"concept-tracker/internal/worker"
 
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/gin-gonic/gin"
@@ -22,16 +23,16 @@ type Server struct {
 	db     *pgxpool.Pool
 }
 
-func New(c *config.Config) (*Server, error) {
+func New(c *config.Config) (*Server, *worker.Worker, error) {
 	clerk.SetKey(c.ClerkSecretKey)
 
 	p, err := pgxpool.New(context.Background(), c.DSN())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if err := p.Ping(context.Background()); err != nil {
-		return nil, fmt.Errorf("database unreachable: %w", err)
+		return nil, nil, fmt.Errorf("database unreachable: %w", err)
 	}
 	log.Printf("database connected successfully")
 
@@ -58,14 +59,29 @@ func New(c *config.Config) (*Server, error) {
 	asvc := service.NewActivityLogService(ar)
 	ah := handler.NewActivityLogHandler(asvc)
 
+	// user preferences repository / svc / handler
+	ur := repository.NewUserPreference(p)
+	usvc := service.NewUserPreferencesService(ur)
+	uh := handler.NewUserPreferencesHandler(usvc)
+
+	// reminder repository / svc / handler
+	rer := repository.NewReminder(p)
+
 	// register routes
 	handler.RegisterHealthRoutes(s.router)
 	handler.RegisterConceptRoutes(v1, ch)
 	handler.RegisterResourceRoutes(v1, rh)
 	handler.RegisterActivityLogRoutes(v1, ah)
+	handler.RegisterUserPreferencesRoutes(v1, uh)
 	handler.RegisterMeRoutes(v1)
 
-	return s, nil
+	// start worker
+	w := worker.NewWorker(rer, ur)
+	if err = w.Start(); err != nil {
+		return nil, nil, err
+	}
+
+	return s, &w, nil
 }
 
 func (s *Server) Start() {

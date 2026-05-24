@@ -2,6 +2,11 @@ include .env
 export
 
 DB_URL=postgres://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}?sslmode=disable
+VERSION ?= dev
+BINARY_NAME = ct-api
+BUILD_LOC = ./bin/$(BINARY_NAME)
+
+.DEFAULT_GOAL := build
 
 .PHONY: migrate-up
 migrate-up:
@@ -27,7 +32,7 @@ fix:
 
 .PHONY: build
 build:
-	go build -o bin/api ./cmd/api
+	go build -trimpath -ldflags "-X main.version=$(VERSION) -w -s" -o $(BUILD_LOC) ./cmd/api	
 
 .PHONY: lint-migrations
 lint-migrations:
