@@ -1,0 +1,24 @@
+# Git
+.git
+.gitignore
+
+# Environment
+.env
+*.env
+
+# Binaries
+bin/
+
+# Tests
+integraton_tests/
+internal/mocks/
+
+# Dev tooling
+.mockery.yml
+mise.toml
+
+# Docs
+README.md
+
+# Mobile (future)
+mobile/
