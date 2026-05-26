@@ -19,17 +19,17 @@ func TestGetByID(t *testing.T) {
 	errSomething := errors.New("some error")
 
 	tests := []struct {
-		name string
-		mockSetup func(repo *mocks.MockConceptRepository) 
-		want domain.ConceptWithChildren
-		wantErr error
+		name      string
+		mockSetup func(repo *mocks.MockConceptRepository)
+		want      domain.ConceptWithChildren
+		wantErr   error
 	}{
 		{
 			name: "return domain.ErrNotFound if pgx.ErrNoRows",
 			mockSetup: func(repo *mocks.MockConceptRepository) {
 				repo.On("GetByID", mock.Anything, mock.Anything, mock.Anything).Return(domain.Concept{}, pgx.ErrNoRows)
 			},
-			want: domain.ConceptWithChildren{},
+			want:    domain.ConceptWithChildren{},
 			wantErr: domain.ErrNotFound,
 		},
 		{
@@ -37,16 +37,16 @@ func TestGetByID(t *testing.T) {
 			mockSetup: func(repo *mocks.MockConceptRepository) {
 				repo.On("GetByID", mock.Anything, mock.Anything, mock.Anything).Return(domain.Concept{}, errSomething)
 			},
-			want: domain.ConceptWithChildren{},
+			want:    domain.ConceptWithChildren{},
 			wantErr: errSomething,
 		},
 		{
 			name: "if repo.GetByID succeeds but repo.GetChildren fails, service returns the error",
 			mockSetup: func(repo *mocks.MockConceptRepository) {
 				repo.On("GetByID", mock.Anything, mock.Anything, mock.Anything).Return(domain.Concept{}, nil)
-    		repo.On("GetChildren", mock.Anything, mock.Anything, mock.Anything).Return(nil, errSomething)	
+				repo.On("GetChildren", mock.Anything, mock.Anything, mock.Anything).Return(nil, errSomething)
 			},
-			want: domain.ConceptWithChildren{},
+			want:    domain.ConceptWithChildren{},
 			wantErr: errSomething,
 		},
 		{
@@ -56,7 +56,7 @@ func TestGetByID(t *testing.T) {
 				repo.On("GetChildren", mock.Anything, mock.Anything, mock.Anything).Return([]domain.Concept{}, nil)
 			},
 			want: domain.ConceptWithChildren{
-				Concept: domain.Concept{},
+				Concept:  domain.Concept{},
 				Children: []domain.Concept{},
 			},
 			wantErr: nil,
@@ -64,7 +64,7 @@ func TestGetByID(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T){
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			repo := &mocks.MockConceptRepository{}
@@ -80,16 +80,15 @@ func TestGetByID(t *testing.T) {
 	}
 }
 
-
 func TestDelete(t *testing.T) {
 	t.Parallel()
 
 	errSomething := errors.New("some error")
 
 	tests := []struct {
-		name string
+		name      string
 		mockSetup func(repo *mocks.MockConceptRepository)
-		wantErr error
+		wantErr   error
 	}{
 		{
 			name: "successfuly deletes",
@@ -115,7 +114,7 @@ func TestDelete(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T){
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			repo := &mocks.MockConceptRepository{}
@@ -136,9 +135,9 @@ func TestMove(t *testing.T) {
 	errSomething := errors.New("some error")
 
 	tests := []struct {
-		name string
+		name      string
 		mockSetup func(repo *mocks.MockConceptRepository)
-		wantErr error
+		wantErr   error
 	}{
 		{
 			name: "successfuly moves",
@@ -164,7 +163,7 @@ func TestMove(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T){
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			repo := &mocks.MockConceptRepository{}

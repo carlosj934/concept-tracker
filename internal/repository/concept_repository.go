@@ -43,7 +43,7 @@ func (r *postgresConceptRepository) Create(ctx context.Context, userID string, c
 	INSERT INTO concepts (user_id, parent_id, name, description)
 	VALUES ($1, $2, $3, $4)
 	RETURNING id, created_at, updated_at
-	`, concept.UserID, concept.ParentID, concept.Name, concept.Description).Scan(&id, &createdAt, &updatedAt)
+	`, userID, concept.ParentID, concept.Name, concept.Description).Scan(&id, &createdAt, &updatedAt)
 	if err != nil {
 		return domain.Concept{}, err
 	}

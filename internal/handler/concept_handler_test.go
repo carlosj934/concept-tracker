@@ -11,17 +11,15 @@ import (
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/mocks"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/gin-gonic/gin"
 )
 
 const (
 	testUserID    = "user_abc123"
 	testConceptID = "concept-uuid-1"
 )
-
-func ptr(s string) *string { return &s }
 
 func TestConceptHandler_GetByID(t *testing.T) {
 	t.Parallel()
@@ -257,10 +255,10 @@ func TestConceptHandler_Create(t *testing.T) {
 			wantStatus: http.StatusCreated,
 		},
 		{
-			name:      "returns 400 on malformed JSON",
-			userID:    testUserID,
-			body:      "not-json",
-			mockSetup: func(svc *mocks.MockConceptService) {},
+			name:       "returns 400 on malformed JSON",
+			userID:     testUserID,
+			body:       "not-json",
+			mockSetup:  func(svc *mocks.MockConceptService) {},
 			wantStatus: http.StatusBadRequest,
 		},
 		{
@@ -341,11 +339,11 @@ func TestConceptHandler_Update(t *testing.T) {
 			wantStatus: http.StatusNotFound,
 		},
 		{
-			name:      "returns 400 on malformed JSON",
-			conceptID: testConceptID,
-			userID:    testUserID,
-			body:      "not-json",
-			mockSetup: func(svc *mocks.MockConceptService) {},
+			name:       "returns 400 on malformed JSON",
+			conceptID:  testConceptID,
+			userID:     testUserID,
+			body:       "not-json",
+			mockSetup:  func(svc *mocks.MockConceptService) {},
 			wantStatus: http.StatusBadRequest,
 		},
 	}
@@ -424,11 +422,11 @@ func TestConceptHandler_Move(t *testing.T) {
 			wantStatus: http.StatusNotFound,
 		},
 		{
-			name:      "returns 400 on malformed JSON",
-			conceptID: testConceptID,
-			userID:    testUserID,
-			body:      "not-json",
-			mockSetup: func(svc *mocks.MockConceptService) {},
+			name:       "returns 400 on malformed JSON",
+			conceptID:  testConceptID,
+			userID:     testUserID,
+			body:       "not-json",
+			mockSetup:  func(svc *mocks.MockConceptService) {},
 			wantStatus: http.StatusBadRequest,
 		},
 	}
