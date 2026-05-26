@@ -1,0 +1,50 @@
+all: false
+dir: '{{.InterfaceDir}}'
+filename: mocks_test.go
+force-file-write: true
+formatter: goimports
+formatter-options:
+  goimports:
+    all-errors: false
+    comments: true
+    format-only: true
+    fragment: false
+    local-prefix: ""
+    tab-indent: true
+    tab-width: 8
+generate: true
+include-auto-generated: false
+log-level: info
+structname: '{{.Mock}}{{.InterfaceName}}'
+pkgname: '{{.SrcPackageName}}'
+recursive: false
+require-template-schema-exists: true
+template: testify
+template-schema: '{{.Template}}.schema.json'
+packages:
+  concept-tracker/internal/repository:
+    config:
+      dir: internal/mocks
+      pkgname: mocks
+      filename: mock_concept_repository.go
+    interfaces:
+      ConceptRepository:
+      ActivityLogRepository:
+        config:
+          filename: mock_activity_log_repository.go
+      UserPreferencesRepository:
+        config:
+          filename: mock_user_preferences_repository.go
+  concept-tracker/internal/service:
+    config:
+      dir: internal/mocks
+      pkgname: mocks
+      filename: mock_concept_service.go
+    interfaces:
+      ConceptService:
+      ActivityLogService:
+        config:
+          filename: mock_activity_log_service.go
+      UserPreferencesService:
+        config:
+          filename: mock_user_preferences_service.go
