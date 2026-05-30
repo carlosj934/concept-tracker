@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"time"
+	"errors"
 
 	"github.com/jackc/pgx/v5"
 
@@ -13,7 +13,7 @@ import (
 type ReminderService interface {
 	ListConceptReminders(ctx context.Context, userID string, conceptID string) ([]domain.Reminder, error)
 	Create(ctx context.Context, conceptID string, userID string, reminder domain.Reminder) (domain.Reminder, error)
-	Update(ctx context.Context, userID string, id string, update UpdateReminderParams) (domain.Reminder, error)
+	Update(ctx context.Context, userID string, id string, update domain.UpdateReminderParams) (domain.Reminder, error)
 	Delete(ctx context.Context, userID string, id string) error
 }
 
@@ -45,26 +45,10 @@ func (r *reminderService) Create(ctx context.Context, conceptID string, userID s
 	return create, nil
 }
 
-type UpdateReminderParams struct {
-	Message     string
-	IsRecurring bool
-	CronExpr    *string
-	ScheduledAt *time.Time
-	IsActive    bool
-}
-
-func (r *reminderService) Update(ctx context.Context, userID string, id string, update UpdateReminderParams) (domain.Reminder, error) {
-	up := repository.UpdateReminderParams{
-		Message:     update.Message,
-		IsRecurring: update.IsRecurring,
-		CronExpr:    update.CronExpr,
-		ScheduledAt: update.ScheduledAt,
-		IsActive:    update.IsActive,
-	}
-
-	u, err := r.repo.Update(ctx, userID, id, up)
+func (r *reminderService) Update(ctx context.Context, userID string, id string, update domain.UpdateReminderParams) (domain.Reminder, error) {
+	u, err := r.repo.Update(ctx, userID, id, update)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.Reminder{}, domain.ErrNotFound
 		}
 
@@ -76,6 +60,10 @@ func (r *reminderService) Update(ctx context.Context, userID string, id string, 
 
 func (r *reminderService) Delete(ctx context.Context, userID string, id string) error {
 	if err := r.repo.Delete(ctx, userID, id); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrNotFound
+		}
+
 		return err
 	}
 

@@ -103,7 +103,7 @@ func (r *postgresActivityLogRepository) Create(ctx context.Context, userID strin
 		DurationMins: activity.DurationMins,
 		Notes:        activity.Notes,
 		LoggedAt:     activity.LoggedAt,
-		CreatedAt:    activity.CreatedAt,
+		CreatedAt:    createdAt,
 	}, nil
 }
 

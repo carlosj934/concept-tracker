@@ -8,14 +8,8 @@ import (
 
 func RegisterMeRoutes(router *gin.RouterGroup) {
 	router.GET("/me", func(c *gin.Context) {
-		userID, exists := c.Get("userID")
-		if !exists {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-				"error": gin.H{
-					"code":    "FORBIDDEN",
-					"message": "forbidden",
-				},
-			})
+		userID, ok := getUserID(c)
+		if !ok {
 			return
 		}
 

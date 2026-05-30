@@ -13,20 +13,12 @@ type ReminderRepository interface {
 	// user facing
 	ListConceptReminders(ctx context.Context, userID string, conceptID string) ([]domain.Reminder, error)
 	Create(ctx context.Context, conceptID string, userID string, reminder domain.Reminder) (domain.Reminder, error)
-	Update(ctx context.Context, userID string, id string, update UpdateReminderParams) (domain.Reminder, error)
+	Update(ctx context.Context, userID string, id string, update domain.UpdateReminderParams) (domain.Reminder, error)
 	Delete(ctx context.Context, userID string, id string) error
 
 	// worker facing
 	GetActiveReminders(ctx context.Context) ([]domain.Reminder, error)
 	AdvanceSchedule(ctx context.Context, id string, scheduledAt *time.Time, lastSentAt *time.Time, isActive bool) error
-}
-
-type UpdateReminderParams struct {
-	Message     string
-	IsRecurring bool
-	CronExpr    *string
-	ScheduledAt *time.Time
-	IsActive    bool
 }
 
 type postgresReminderRepository struct {
@@ -109,7 +101,7 @@ func (r *postgresReminderRepository) Create(ctx context.Context, conceptID strin
 	}, nil
 }
 
-func (r *postgresReminderRepository) Update(ctx context.Context, userID string, id string, update UpdateReminderParams) (domain.Reminder, error) {
+func (r *postgresReminderRepository) Update(ctx context.Context, userID string, id string, update domain.UpdateReminderParams) (domain.Reminder, error) {
 	var i, u, conceptID, message string
 	var isRecurring, isActive bool
 	var cronExpr *string

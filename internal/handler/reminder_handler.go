@@ -28,7 +28,12 @@ func NewReminderHandler(service service.ReminderService) *ReminderHandler {
 }
 
 func (h *ReminderHandler) ListConceptReminders(c *gin.Context) {
-	l, err := h.service.ListConceptReminders(c, getUserID(c), c.Param("id"))
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	l, err := h.service.ListConceptReminders(c, userID, c.Param("id"))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -61,6 +66,16 @@ func (h *ReminderHandler) Create(c *gin.Context) {
 		return
 	}
 
+	if reminderRequest.IsRecurring && reminderRequest.CronExpr == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": gin.H{
+				"code":    "BAD_REQUEST",
+				"message": "cron_expr is required for recurring reminders",
+			},
+		})
+		return
+	}
+
 	reminder = domain.Reminder{
 		Message:     reminderRequest.Message,
 		IsRecurring: reminderRequest.IsRecurring,
@@ -68,7 +83,12 @@ func (h *ReminderHandler) Create(c *gin.Context) {
 		ScheduledAt: reminderRequest.ScheduledAt,
 	}
 
-	create, err := h.service.Create(c, c.Param("id"), getUserID(c), reminder)
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	create, err := h.service.Create(c, c.Param("id"), userID, reminder)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -80,7 +100,7 @@ func (h *ReminderHandler) Create(c *gin.Context) {
 }
 
 func (h *ReminderHandler) Update(c *gin.Context) {
-	var updateReminder service.UpdateReminderParams
+	var updateReminder domain.UpdateReminderParams
 
 	j := c.ShouldBindJSON(&updateReminder)
 	if j != nil {
@@ -93,7 +113,12 @@ func (h *ReminderHandler) Update(c *gin.Context) {
 		return
 	}
 
-	u, err := h.service.Update(c, getUserID(c), c.Param("rid"), updateReminder)
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	u, err := h.service.Update(c, userID, c.Param("rid"), updateReminder)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -105,7 +130,12 @@ func (h *ReminderHandler) Update(c *gin.Context) {
 }
 
 func (h *ReminderHandler) Delete(c *gin.Context) {
-	if err := h.service.Delete(c, getUserID(c), c.Param("rid")); err != nil {
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	if err := h.service.Delete(c, userID, c.Param("rid")); err != nil {
 		handleError(c, err)
 		return
 	}

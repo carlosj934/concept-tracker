@@ -121,7 +121,7 @@ func TestReminderRepository_Update(t *testing.T) {
 	require.NoError(t, err)
 
 	newCron := "0 10 * * *"
-	updated, err := repo.Update(ctx, "user_test123", created.ID, repository.UpdateReminderParams{
+	updated, err := repo.Update(ctx, "user_test123", created.ID, domain.UpdateReminderParams{
 		Message:     "Updated message",
 		IsRecurring: true,
 		CronExpr:    &newCron,
