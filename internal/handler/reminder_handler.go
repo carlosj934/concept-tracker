@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func RegisterReminderRoutes(router *gin.RouterGroup, h *ReminderHandler) {
@@ -102,7 +102,6 @@ func (h *ReminderHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": u,
 	})
-
 }
 
 func (h *ReminderHandler) Delete(c *gin.Context) {

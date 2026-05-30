@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/repository"
-
-	"github.com/jackc/pgx/v5"
 )
 
 type ReminderService interface {

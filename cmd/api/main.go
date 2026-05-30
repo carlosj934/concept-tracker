@@ -3,13 +3,16 @@ package main
 import (
 	"log"
 
-	"concept-tracker/config"
-
 	"github.com/joho/godotenv"
+
+	"concept-tracker/config"
 )
 
 func main() {
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	load, err := config.Load()
 	if err != nil {

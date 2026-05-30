@@ -3,9 +3,9 @@ package handler
 import (
 	"net/http"
 
-	"concept-tracker/internal/service"
-
 	"github.com/gin-gonic/gin"
+
+	"concept-tracker/internal/service"
 )
 
 func RegisterUserPreferencesRoutes(router *gin.RouterGroup, h *UserPreferencesHandler) {
@@ -54,7 +54,6 @@ func (h *UserPreferencesHandler) Update(c *gin.Context) {
 	}
 
 	u, err := h.service.Update(c, getUserID(c), updateUserPreferences.Timezone)
-
 	if err != nil {
 		handleError(c, err)
 		return

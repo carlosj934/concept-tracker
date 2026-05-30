@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"concept-tracker/internal/domain"
-
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"concept-tracker/internal/domain"
 )
 
 type ReminderRepository interface {
@@ -58,7 +58,6 @@ func (r *postgresReminderRepository) ListConceptReminders(ctx context.Context, u
 		var createdAt time.Time
 
 		err := rows.Scan(&id, &conceptID, &userID, &message, &isRecurring, &cronExpr, &scheduledAt, &lastSentAt, &isActive, &createdAt)
-
 		if err != nil {
 			return nil, err
 		}
@@ -140,7 +139,6 @@ func (r *postgresReminderRepository) Update(ctx context.Context, userID string, 
 		IsActive:    isActive,
 		CreatedAt:   createdAt,
 	}, nil
-
 }
 
 func (r *postgresReminderRepository) Delete(ctx context.Context, userID string, id string) error {

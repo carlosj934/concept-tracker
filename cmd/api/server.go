@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/clerk/clerk-sdk-go/v2"
+	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"concept-tracker/config"
 	"concept-tracker/internal/handler"
 	"concept-tracker/internal/middleware"
 	"concept-tracker/internal/repository"
 	"concept-tracker/internal/service"
 	"concept-tracker/internal/worker"
-
-	"github.com/clerk/clerk-sdk-go/v2"
-	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Server struct {
@@ -88,5 +88,8 @@ func New(c *config.Config) (*Server, *worker.Worker, error) {
 }
 
 func (s *Server) Start() {
-	s.router.Run(fmt.Sprintf(":%d", s.cfg.ServerPort))
+	err := s.router.Run(fmt.Sprintf(":%d", s.cfg.ServerPort))
+	if err != nil {
+		log.Fatal(err)
+	}
 }

@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"concept-tracker/internal/domain"
-	"concept-tracker/internal/mocks"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"concept-tracker/internal/domain"
+	"concept-tracker/internal/mocks"
 )
 
 func validCursor(loggedAt time.Time, id string) string {

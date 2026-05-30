@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func RegisterActivityLogRoutes(router *gin.RouterGroup, h *ActivityLogHandler) {

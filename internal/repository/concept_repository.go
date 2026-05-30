@@ -2,12 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"log"
 	"time"
-
-	"concept-tracker/internal/domain"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"concept-tracker/internal/domain"
 )
 
 type ConceptRepository interface {
@@ -37,7 +39,11 @@ func (r *postgresConceptRepository) Create(ctx context.Context, userID string, c
 	if err != nil {
 		return domain.Concept{}, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && !errors.Is(rbErr, pgx.ErrTxClosed) {
+			log.Printf("failed to rollback transaction: %v", rbErr)
+		}
+	}()
 
 	err = tx.QueryRow(ctx, `
 	INSERT INTO concepts (user_id, parent_id, name, description)
@@ -226,7 +232,11 @@ func (r *postgresConceptRepository) Move(ctx context.Context, userID string, id 
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && !errors.Is(rbErr, pgx.ErrTxClosed) {
+			log.Printf("failed to rollback transaction: %v", rbErr)
+		}
+	}()
 
 	_, err = tx.Exec(ctx, `
 	UPDATE concepts

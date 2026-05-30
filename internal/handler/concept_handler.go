@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func RegisterConceptRoutes(router *gin.RouterGroup, h *ConceptHandler) {
@@ -46,7 +46,6 @@ func getUserID(c *gin.Context) string {
 }
 
 func (h *ConceptHandler) ListRoots(c *gin.Context) {
-
 	l, err := h.service.ListRoots(c, getUserID(c))
 	if err != nil {
 		handleError(c, err)
@@ -68,7 +67,6 @@ func (h *ConceptHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": g,
 	})
-
 }
 
 func (h *ConceptHandler) GetSubtree(c *gin.Context) {

@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/repository"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestActivityLogRepository_Create(t *testing.T) {

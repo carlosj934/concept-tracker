@@ -6,21 +6,22 @@ import (
 	"os"
 	"testing"
 
-	"concept-tracker/db"
-
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
+
+	"concept-tracker/db"
 )
 
-var testPool *pgxpool.Pool
-var testCtr *postgres.PostgresContainer
+var (
+	testPool *pgxpool.Pool
+	testCtr  *postgres.PostgresContainer
+)
 
 func TestMain(m *testing.M) {
-
 	ctx := context.Background()
 
 	dbName := "users"

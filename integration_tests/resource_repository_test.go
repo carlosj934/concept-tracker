@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/repository"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestResourceRepository_Create(t *testing.T) {

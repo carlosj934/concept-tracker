@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"concept-tracker/internal/domain"
-
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"concept-tracker/internal/domain"
 )
 
 type UserPreferencesRepository interface {

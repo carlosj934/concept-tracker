@@ -5,9 +5,9 @@ import (
 	"log"
 	"time"
 
-	"concept-tracker/internal/repository"
-
 	"github.com/robfig/cron/v3"
+
+	"concept-tracker/internal/repository"
 )
 
 type Worker struct {

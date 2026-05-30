@@ -3,10 +3,10 @@ package handler
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func RegisterResourceRoutes(router *gin.RouterGroup, h *ResourceHandler) {
