@@ -26,7 +26,7 @@ db-seed:
 
 .PHONY: fix
 fix:
-	gofumpt -w .
+	gofmt -s -w .
 	goimports -w .
 	golangci-lint run --fix
 
