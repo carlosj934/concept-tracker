@@ -43,7 +43,18 @@ func getUserID(c *gin.Context) (string, bool) {
 		return "", false
 	}
 
-	return userID.(string), true
+	str, ok := userID.(string)
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": gin.H{
+				"code":    "INTERNAL_SERVER_ERROR",
+				"message": "internal server error",
+			},
+		})
+		return "", false
+	}
+
+	return str, true
 }
 
 func (h *ConceptHandler) ListRoots(c *gin.Context) {

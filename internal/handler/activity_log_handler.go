@@ -56,7 +56,7 @@ type createActivityLogRequest struct {
 	ActivityType string    `json:"activity_type" binding:"required"`
 	DurationMins *int64    `json:"duration_minutes"`
 	Notes        *string   `json:"notes"`
-	LoggedAt     time.Time `json:"logged_at"`
+	LoggedAt     time.Time `json:"logged_at" binding:"required"`
 }
 
 func (h *ActivityLogHandler) Create(c *gin.Context) {
