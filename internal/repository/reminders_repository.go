@@ -4,29 +4,21 @@ import (
 	"context"
 	"time"
 
-	"concept-tracker/internal/domain"
-
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"concept-tracker/internal/domain"
 )
 
 type ReminderRepository interface {
 	// user facing
 	ListConceptReminders(ctx context.Context, userID string, conceptID string) ([]domain.Reminder, error)
 	Create(ctx context.Context, conceptID string, userID string, reminder domain.Reminder) (domain.Reminder, error)
-	Update(ctx context.Context, userID string, id string, update UpdateReminderParams) (domain.Reminder, error)
+	Update(ctx context.Context, userID string, id string, update domain.UpdateReminderParams) (domain.Reminder, error)
 	Delete(ctx context.Context, userID string, id string) error
 
 	// worker facing
 	GetActiveReminders(ctx context.Context) ([]domain.Reminder, error)
 	AdvanceSchedule(ctx context.Context, id string, scheduledAt *time.Time, lastSentAt *time.Time, isActive bool) error
-}
-
-type UpdateReminderParams struct {
-	Message     string
-	IsRecurring bool
-	CronExpr    *string
-	ScheduledAt *time.Time
-	IsActive    bool
 }
 
 type postgresReminderRepository struct {
@@ -58,7 +50,6 @@ func (r *postgresReminderRepository) ListConceptReminders(ctx context.Context, u
 		var createdAt time.Time
 
 		err := rows.Scan(&id, &conceptID, &userID, &message, &isRecurring, &cronExpr, &scheduledAt, &lastSentAt, &isActive, &createdAt)
-
 		if err != nil {
 			return nil, err
 		}
@@ -110,7 +101,7 @@ func (r *postgresReminderRepository) Create(ctx context.Context, conceptID strin
 	}, nil
 }
 
-func (r *postgresReminderRepository) Update(ctx context.Context, userID string, id string, update UpdateReminderParams) (domain.Reminder, error) {
+func (r *postgresReminderRepository) Update(ctx context.Context, userID string, id string, update domain.UpdateReminderParams) (domain.Reminder, error) {
 	var i, u, conceptID, message string
 	var isRecurring, isActive bool
 	var cronExpr *string
@@ -140,7 +131,6 @@ func (r *postgresReminderRepository) Update(ctx context.Context, userID string, 
 		IsActive:    isActive,
 		CreatedAt:   createdAt,
 	}, nil
-
 }
 
 func (r *postgresReminderRepository) Delete(ctx context.Context, userID string, id string) error {

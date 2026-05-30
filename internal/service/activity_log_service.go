@@ -3,14 +3,15 @@ package service
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/repository"
-
-	"github.com/jackc/pgx/v5"
 )
 
 type ActivityLogService interface {
@@ -40,6 +41,10 @@ func (a activityLogService) List(ctx context.Context, userID string, conceptID s
 		}
 
 		s := strings.Split(string(data), "_")
+		if len(s) != 2 {
+			return domain.ActivityLogPage{}, fmt.Errorf("invalid cursor format")
+		}
+
 		t, err := time.Parse(time.RFC3339, s[0])
 		if err != nil {
 			return domain.ActivityLogPage{}, err
@@ -82,7 +87,7 @@ func (a activityLogService) Create(ctx context.Context, userID string, conceptID
 func (a activityLogService) Update(ctx context.Context, userID string, id string, actType *string, duration *int64, notes *string, loggedAt *time.Time) (domain.ActivityLog, error) {
 	u, err := a.repo.Update(ctx, userID, id, actType, duration, notes, loggedAt)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.ActivityLog{}, domain.ErrNotFound
 		}
 		return domain.ActivityLog{}, err
@@ -93,7 +98,7 @@ func (a activityLogService) Update(ctx context.Context, userID string, id string
 
 func (a activityLogService) Delete(ctx context.Context, userID string, id string) error {
 	if err := a.repo.Delete(ctx, userID, id); err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.ErrNotFound
 		}
 		return err

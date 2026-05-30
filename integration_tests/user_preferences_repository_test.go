@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"concept-tracker/internal/repository"
-
 	"github.com/stretchr/testify/require"
+
+	"concept-tracker/internal/repository"
 )
 
 func TestUserPreferencesRepository_Update(t *testing.T) {

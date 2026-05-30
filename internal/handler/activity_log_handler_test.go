@@ -8,12 +8,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"concept-tracker/internal/domain"
-	"concept-tracker/internal/mocks"
-
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"concept-tracker/internal/domain"
+	"concept-tracker/internal/mocks"
 )
 
 func TestActivityLogHandler_List(t *testing.T) {

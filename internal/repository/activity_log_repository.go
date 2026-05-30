@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"concept-tracker/internal/domain"
-
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"concept-tracker/internal/domain"
 )
 
 type ActivityLogRepository interface {
@@ -61,7 +61,6 @@ func (r *postgresActivityLogRepository) List(ctx context.Context, userID string,
 		var loggedAt, createdAt time.Time
 
 		err := rows.Scan(&id, &conceptID, &userID, &activity, &duration, &notes, &loggedAt, &createdAt)
-
 		if err != nil {
 			return nil, err
 		}
@@ -104,7 +103,7 @@ func (r *postgresActivityLogRepository) Create(ctx context.Context, userID strin
 		DurationMins: activity.DurationMins,
 		Notes:        activity.Notes,
 		LoggedAt:     activity.LoggedAt,
-		CreatedAt:    activity.CreatedAt,
+		CreatedAt:    createdAt,
 	}, nil
 }
 

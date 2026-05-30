@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
+	"errors"
+
+	"github.com/jackc/pgx/v5"
 
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/repository"
-
-	"github.com/jackc/pgx/v5"
 )
 
 type ConceptService interface {
@@ -32,7 +33,7 @@ func NewConceptService(repo repository.ConceptRepository) ConceptService {
 func (c conceptService) GetByID(ctx context.Context, userID string, id string) (domain.ConceptWithChildren, error) {
 	i, err := c.repo.GetByID(ctx, userID, id)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.ConceptWithChildren{}, domain.ErrNotFound
 		}
 		return domain.ConceptWithChildren{}, err
@@ -78,7 +79,7 @@ func (c conceptService) Create(ctx context.Context, userID string, concept domai
 func (c conceptService) Update(ctx context.Context, userID string, id string, name string, description *string) (domain.Concept, error) {
 	u, err := c.repo.Update(ctx, userID, id, name, description)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.Concept{}, domain.ErrNotFound
 		}
 		return domain.Concept{}, err
@@ -89,7 +90,7 @@ func (c conceptService) Update(ctx context.Context, userID string, id string, na
 
 func (c conceptService) Move(ctx context.Context, userID string, id string, newParentID *string) error {
 	if err := c.repo.Move(ctx, userID, id, newParentID); err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.ErrNotFound
 		}
 		return err
@@ -100,7 +101,7 @@ func (c conceptService) Move(ctx context.Context, userID string, id string, newP
 
 func (c conceptService) Delete(ctx context.Context, userID string, id string) error {
 	if err := c.repo.Delete(ctx, userID, id); err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.ErrNotFound
 		}
 		return err

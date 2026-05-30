@@ -5,12 +5,12 @@ import (
 	"errors"
 	"testing"
 
-	"concept-tracker/internal/domain"
-	"concept-tracker/internal/mocks"
-
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"concept-tracker/internal/domain"
+	"concept-tracker/internal/mocks"
 )
 
 func TestGetByID(t *testing.T) {

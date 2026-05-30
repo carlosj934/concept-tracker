@@ -3,10 +3,10 @@ package handler
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func RegisterResourceRoutes(router *gin.RouterGroup, h *ResourceHandler) {
@@ -27,7 +27,12 @@ func NewResourceHandler(service service.ResourceService) *ResourceHandler {
 }
 
 func (h *ResourceHandler) ListConceptResources(c *gin.Context) {
-	l, err := h.service.ListConceptResources(c, getUserID(c), c.Param("id"))
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	l, err := h.service.ListConceptResources(c, userID, c.Param("id"))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -39,9 +44,9 @@ func (h *ResourceHandler) ListConceptResources(c *gin.Context) {
 }
 
 type createResourceRequest struct {
-	Provider   string `json:"provider"`
+	Provider   string `json:"provider" binding:"required"`
 	ExternalID string `json:"external_id"`
-	URL        string `json:"url"`
+	URL        string `json:"url" binding:"required"`
 	Title      string `json:"title"`
 }
 
@@ -67,7 +72,12 @@ func (h *ResourceHandler) Create(c *gin.Context) {
 		Title:      resourceRequest.Title,
 	}
 
-	create, err := h.service.Create(c, getUserID(c), c.Param("id"), resource)
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	create, err := h.service.Create(c, userID, c.Param("id"), resource)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -97,7 +107,12 @@ func (h *ResourceHandler) Update(c *gin.Context) {
 		return
 	}
 
-	u, err := h.service.Update(c, getUserID(c), c.Param("rid"), updateResource.URL, updateResource.Title)
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	u, err := h.service.Update(c, userID, c.Param("rid"), updateResource.URL, updateResource.Title)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -109,7 +124,12 @@ func (h *ResourceHandler) Update(c *gin.Context) {
 }
 
 func (h *ResourceHandler) Delete(c *gin.Context) {
-	d := h.service.Delete(c, getUserID(c), c.Param("rid"))
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	d := h.service.Delete(c, userID, c.Param("rid"))
 	if d != nil {
 		handleError(c, d)
 		return

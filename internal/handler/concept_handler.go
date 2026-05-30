@@ -1,13 +1,14 @@
 package handler
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func RegisterConceptRoutes(router *gin.RouterGroup, h *ConceptHandler) {
@@ -30,7 +31,7 @@ func NewConceptHandler(service service.ConceptService) *ConceptHandler {
 	}
 }
 
-func getUserID(c *gin.Context) string {
+func getUserID(c *gin.Context) (string, bool) {
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
@@ -39,15 +40,30 @@ func getUserID(c *gin.Context) string {
 				"message": "forbidden",
 			},
 		})
-		return ""
+		return "", false
 	}
 
-	return userID.(string)
+	str, ok := userID.(string)
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": gin.H{
+				"code":    "INTERNAL_SERVER_ERROR",
+				"message": "internal server error",
+			},
+		})
+		return "", false
+	}
+
+	return str, true
 }
 
 func (h *ConceptHandler) ListRoots(c *gin.Context) {
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
 
-	l, err := h.service.ListRoots(c, getUserID(c))
+	l, err := h.service.ListRoots(c, userID)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -59,7 +75,12 @@ func (h *ConceptHandler) ListRoots(c *gin.Context) {
 }
 
 func (h *ConceptHandler) GetByID(c *gin.Context) {
-	g, err := h.service.GetByID(c, getUserID(c), c.Param("id"))
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	g, err := h.service.GetByID(c, userID, c.Param("id"))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -68,11 +89,15 @@ func (h *ConceptHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": g,
 	})
-
 }
 
 func (h *ConceptHandler) GetSubtree(c *gin.Context) {
-	g, err := h.service.GetSubtree(c, getUserID(c), c.Param("id"))
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	g, err := h.service.GetSubtree(c, userID, c.Param("id"))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -85,7 +110,7 @@ func (h *ConceptHandler) GetSubtree(c *gin.Context) {
 
 type createConceptRequest struct {
 	ParentID    *string `json:"parent_id"`
-	Name        string  `json:"name"`
+	Name        string  `json:"name" binding:"required"`
 	Description *string `json:"description"`
 }
 
@@ -110,7 +135,12 @@ func (h *ConceptHandler) Create(c *gin.Context) {
 		Description: conceptRequest.Description,
 	}
 
-	create, err := h.service.Create(c, getUserID(c), concept)
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	create, err := h.service.Create(c, userID, concept)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -140,7 +170,12 @@ func (h *ConceptHandler) Update(c *gin.Context) {
 		return
 	}
 
-	u, err := h.service.Update(c, getUserID(c), c.Param("id"), updateConcept.Name, updateConcept.Description)
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	u, err := h.service.Update(c, userID, c.Param("id"), updateConcept.Name, updateConcept.Description)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -169,7 +204,12 @@ func (h *ConceptHandler) Move(c *gin.Context) {
 		return
 	}
 
-	m := h.service.Move(c, getUserID(c), c.Param("id"), moveConcept.NewParentID)
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	m := h.service.Move(c, userID, c.Param("id"), moveConcept.NewParentID)
 	if m != nil {
 		handleError(c, m)
 		return
@@ -179,7 +219,12 @@ func (h *ConceptHandler) Move(c *gin.Context) {
 }
 
 func (h *ConceptHandler) Delete(c *gin.Context) {
-	d := h.service.Delete(c, getUserID(c), c.Param("id"))
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	d := h.service.Delete(c, userID, c.Param("id"))
 	if d != nil {
 		handleError(c, d)
 		return
@@ -189,7 +234,7 @@ func (h *ConceptHandler) Delete(c *gin.Context) {
 }
 
 func handleError(c *gin.Context, err error) {
-	if err == domain.ErrNotFound {
+	if errors.Is(err, domain.ErrNotFound) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": gin.H{
 				"code":    "NOT_FOUND",

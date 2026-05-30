@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
+	"errors"
+
+	"github.com/jackc/pgx/v5"
 
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/repository"
-
-	"github.com/jackc/pgx/v5"
 )
 
 type ResourceService interface {
@@ -47,7 +48,7 @@ func (r resourceService) Create(ctx context.Context, userID string, conceptID st
 func (r resourceService) Update(ctx context.Context, userID string, id string, url *string, title *string) (domain.ConceptResource, error) {
 	u, err := r.repo.Update(ctx, userID, id, url, title)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.ConceptResource{}, domain.ErrNotFound
 		}
 		return domain.ConceptResource{}, err
@@ -58,7 +59,7 @@ func (r resourceService) Update(ctx context.Context, userID string, id string, u
 
 func (r resourceService) Delete(ctx context.Context, userID string, id string) error {
 	if err := r.repo.Delete(ctx, userID, id); err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.ErrNotFound
 		}
 		return err

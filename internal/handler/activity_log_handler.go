@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func RegisterActivityLogRoutes(router *gin.RouterGroup, h *ActivityLogHandler) {
@@ -38,7 +38,12 @@ func (h *ActivityLogHandler) List(c *gin.Context) {
 		limit = 100
 	}
 
-	l, err := h.service.List(c, getUserID(c), c.Param("id"), cursor, limit)
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	l, err := h.service.List(c, userID, c.Param("id"), cursor, limit)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -48,10 +53,10 @@ func (h *ActivityLogHandler) List(c *gin.Context) {
 }
 
 type createActivityLogRequest struct {
-	ActivityType string    `json:"activity_type"`
+	ActivityType string    `json:"activity_type" binding:"required"`
 	DurationMins *int64    `json:"duration_minutes"`
 	Notes        *string   `json:"notes"`
-	LoggedAt     time.Time `json:"logged_at"`
+	LoggedAt     time.Time `json:"logged_at" binding:"required"`
 }
 
 func (h *ActivityLogHandler) Create(c *gin.Context) {
@@ -76,7 +81,12 @@ func (h *ActivityLogHandler) Create(c *gin.Context) {
 		LoggedAt:     createActivityLog.LoggedAt,
 	}
 
-	create, err := h.service.Create(c, getUserID(c), c.Param("id"), activityLog)
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	create, err := h.service.Create(c, userID, c.Param("id"), activityLog)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -108,7 +118,12 @@ func (h *ActivityLogHandler) Update(c *gin.Context) {
 		return
 	}
 
-	u, err := h.service.Update(c, getUserID(c), c.Param("lid"), updateActivityLog.ActivityType, updateActivityLog.DurationMins, updateActivityLog.Notes, updateActivityLog.LoggedAt)
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	u, err := h.service.Update(c, userID, c.Param("lid"), updateActivityLog.ActivityType, updateActivityLog.DurationMins, updateActivityLog.Notes, updateActivityLog.LoggedAt)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -120,7 +135,12 @@ func (h *ActivityLogHandler) Update(c *gin.Context) {
 }
 
 func (h *ActivityLogHandler) Delete(c *gin.Context) {
-	d := h.service.Delete(c, getUserID(c), c.Param("lid"))
+	userID, ok := getUserID(c)
+	if !ok {
+		return
+	}
+
+	d := h.service.Delete(c, userID, c.Param("lid"))
 	if d != nil {
 		handleError(c, d)
 		return

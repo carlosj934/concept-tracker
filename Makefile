@@ -37,3 +37,7 @@ build:
 .PHONY: lint-migrations
 lint-migrations:
 	squawk db/migrations/*.sql
+
+.PHONY: test
+test:
+	go test -v ./internal/...

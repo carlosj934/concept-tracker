@@ -62,6 +62,9 @@ func Load() (*Config, error) {
 	}
 
 	clerkSecretKey := os.Getenv("CLERK_SECRET_KEY")
+	if clerkSecretKey == "" {
+		return nil, errors.New("CLERK_SECRET_KEY is required")
+	}
 
 	c := &Config{
 		DBHost:         dbHost,

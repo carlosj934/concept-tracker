@@ -5,9 +5,9 @@ import (
 	"log"
 	"time"
 
-	"concept-tracker/internal/repository"
-
 	"github.com/robfig/cron/v3"
+
+	"concept-tracker/internal/repository"
 )
 
 type Worker struct {
@@ -57,9 +57,14 @@ func (w *Worker) Run() {
 		var nextFireAt *time.Time
 
 		if v.IsRecurring {
+			if v.CronExpr == nil {
+				log.Printf("worker: recurring reminder %s has no cron expression, skipping", v.ID)
+				continue
+			}
+
 			sched, err := specParser.Parse(*v.CronExpr)
 			if err != nil {
-				log.Printf("worker: cron expression for this reminder cannot be nil: %v", err)
+				log.Printf("worker: failed to parse cron expression: %v", err)
 				continue
 			}
 

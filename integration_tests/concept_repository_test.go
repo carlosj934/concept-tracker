@@ -5,10 +5,10 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"concept-tracker/internal/domain"
 	"concept-tracker/internal/repository"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestConceptRepository_Create(t *testing.T) {
@@ -101,7 +101,6 @@ func TestConceptRepository_Create(t *testing.T) {
 		require.Equal(t, parent.ID, conceptPath[1].AncestorID)
 		require.Equal(t, child.ID, conceptPath[1].DescendantID)
 		require.Equal(t, int64(1), conceptPath[1].Depth)
-
 	})
 }
 
