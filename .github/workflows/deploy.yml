@@ -65,8 +65,4 @@ jobs:
             -v "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}"
 
       - name: Deploy API
-        run: railway up \
-          --service api \
-          --environment "$RAILWAY_ENVIRONMENT" \
-          --project "$RAILWAY_PROJECT_ID" \
-          --ci
+        run: railway up --service api --ci

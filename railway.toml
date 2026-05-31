@@ -8,12 +8,13 @@ watchPatterns = [
   "db/migrations/**",
   "go.mod",
   "go.sum",
-  "Dockerfile"
+  "Dockerfile",
+  "railway.toml"
 ]
 
 [deploy]
 startCommand = "./ct-api"
-preDeployCommand = "migrate -path db/migrations -database \"$DATABASE_URL\" up"
+preDeployCommand = "/bin/sh -c \"migrate -path /app/db/migrations -database $DATABASE_URL up\""
 healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
@@ -30,7 +31,6 @@ drainSeconds = 30
 
 [environments.staging.deploy]
 restartPolicyType = "NEVER"
-restartPolicyMaxRetries = null
 
 [environments.production.deploy]
 restartPolicyType = "ON_FAILURE"
