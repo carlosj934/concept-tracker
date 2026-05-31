@@ -16,6 +16,10 @@ jobs:
     name: backend:deploy
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v6
 
@@ -43,10 +47,6 @@ jobs:
           fi
           echo "Postgres not found, provisioning..."
           railway add --database postgres
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-          RAILWAY_ENVIRONMENT: ${{ inputs.environment }}
 
       - name: Wire variables to API service
         run: |
@@ -65,14 +65,6 @@ jobs:
           railway variable --set "DB_PASSWORD=${DOLLAR}{{Postgres.PGPASSWORD}}" --service api
           railway variable --set "DB_NAME=${DOLLAR}{{Postgres.PGDATABASE}}" --service api
           railway variable --set "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" --service api
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-          RAILWAY_ENVIRONMENT: ${{ inputs.environment }}
 
       - name: Deploy API
         run: railway up --service api --detach
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-          RAILWAY_ENVIRONMENT: ${{ inputs.environment }}
