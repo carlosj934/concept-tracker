@@ -41,7 +41,7 @@ jobs:
 
       - name: Check and provision Postgres
         run: |
-          if railway service list | grep -q "Postgres"; then
+          if railway service status --all --json 2>/dev/null | jq -e '.[] | select(.name == "Postgres")' > /dev/null 2>&1; then
             echo "Postgres already exists, skipping"
             exit 0
           fi
