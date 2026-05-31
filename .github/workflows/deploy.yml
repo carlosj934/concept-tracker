@@ -45,7 +45,7 @@ jobs:
             echo "Postgres already exists, skipping"
             exit 0
           fi
-          railway add --database postgres
+          railway add --database postgres --json
 
       - name: Check and provision API service
         run: |
@@ -55,6 +55,7 @@ jobs:
           fi
           DOLLAR='$'
           railway add --service api \
+            --json \
             -v "DATABASE_URL=${DOLLAR}{{Postgres.DATABASE_URL}}" \
             -v "DB_HOST=${DOLLAR}{{Postgres.PGHOST}}" \
             -v "DB_PORT=${DOLLAR}{{Postgres.PGPORT}}" \
@@ -68,4 +69,4 @@ jobs:
           --service api \
           --environment "$RAILWAY_ENVIRONMENT" \
           --project "$RAILWAY_PROJECT_ID" \
-          --detach
+          --ci
