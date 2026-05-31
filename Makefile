@@ -28,6 +28,7 @@ db-seed:
 fix:
 	gofmt -s -w .
 	goimports -w .
+	actionlint .github/workflows/*.yml
 	golangci-lint run --fix
 
 .PHONY: build

@@ -56,13 +56,14 @@ jobs:
             exit 0
           fi
           echo "Wiring variables..."
-          railway variable --set "DATABASE_URL=\${{Postgres.DATABASE_URL}}" --service api
-          railway variable --set "DB_HOST=\${{Postgres.PGHOST}}" --service api
-          railway variable --set "DB_PORT=\${{Postgres.PGPORT}}" --service api
-          railway variable --set "DB_USER=\${{Postgres.PGUSER}}" --service api
-          railway variable --set "DB_PASSWORD=\${{Postgres.PGPASSWORD}}" --service api
-          railway variable --set "DB_NAME=\${{Postgres.PGDATABASE}}" --service api
-          railway variable --set "DB_SSL_MODE=require" --service api
+
+          DOLLAR='$'
+          railway variable --set "DATABASE_URL=${DOLLAR}{{Postgres.DATABASE_URL}}" --service api
+          railway variable --set "DB_HOST=${DOLLAR}{{Postgres.PGHOST}}" --service api
+          railway variable --set "DB_PORT=${DOLLAR}{{Postgres.PGPORT}}" --service api
+          railway variable --set "DB_USER=${DOLLAR}{{Postgres.PGUSER}}" --service api
+          railway variable --set "DB_PASSWORD=${DOLLAR}{{Postgres.PGPASSWORD}}" --service api
+          railway variable --set "DB_NAME=${DOLLAR}{{Postgres.PGDATABASE}}" --service api
           railway variable --set "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" --service api
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
