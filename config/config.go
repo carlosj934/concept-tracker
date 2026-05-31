@@ -14,6 +14,7 @@ type Config struct {
 	DBUser     string
 	DBPassword string
 	DBName     string
+	SSLMode string
 
 	// API
 	ServerPort int64
@@ -52,6 +53,11 @@ func Load() (*Config, error) {
 		return nil, errors.New("DB_NAME is required")
 	}
 
+	sslMode := os.Getenv("DB_SSL_MODE")
+	if sslMode == "" {
+		sslMode = "disable"
+	}
+
 	serverPort := os.Getenv("SERVER_PORT")
 	if serverPort == "" {
 		serverPort = "8080"
@@ -72,6 +78,7 @@ func Load() (*Config, error) {
 		DBUser:         dbUser,
 		DBPassword:     dbPassword,
 		DBName:         dbName,
+		SSLMode: sslMode,
 		ServerPort:     serverPortInt,
 		ClerkSecretKey: clerkSecretKey,
 	}
@@ -80,5 +87,5 @@ func Load() (*Config, error) {
 }
 
 func (c *Config) DSN() string {
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName)
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.SSLMode)
 }
