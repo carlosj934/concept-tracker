@@ -1,0 +1,78 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy:
+    name: backend:deploy
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate branch and environment
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          ENV="${{ inputs.environment }}"
+          if [ "$ENV" = "production" ] && [ "$BRANCH" != "master" ]; then
+            echo "Production deployments must be triggered from master, not $BRANCH"
+            exit 1
+          fi
+          if [ "$ENV" = "staging" ] && [ "$BRANCH" != "develop" ]; then
+            echo "Staging deployments must be triggered from develop, not $BRANCH"
+            exit 1
+          fi
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Check and provision Postgres
+        run: |
+          if railway service list | grep -q "Postgres"; then
+            echo "Postgres already exists, skipping"
+            exit 0
+          fi
+          echo "Postgres not found, provisioning..."
+          railway add --database postgres
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT: ${{ inputs.environment }}
+
+      - name: Wire variables to API service
+        run: |
+          EXISTING=$(railway variable --service api --json | jq -r '.DATABASE_URL // empty')
+          if [ -n "$EXISTING" ]; then
+            echo "Variables already wired, skipping"
+            exit 0
+          fi
+          echo "Wiring variables..."
+
+          DOLLAR='$'
+          railway variable --set "DATABASE_URL=${DOLLAR}{{Postgres.DATABASE_URL}}" --service api
+          railway variable --set "DB_HOST=${DOLLAR}{{Postgres.PGHOST}}" --service api
+          railway variable --set "DB_PORT=${DOLLAR}{{Postgres.PGPORT}}" --service api
+          railway variable --set "DB_USER=${DOLLAR}{{Postgres.PGUSER}}" --service api
+          railway variable --set "DB_PASSWORD=${DOLLAR}{{Postgres.PGPASSWORD}}" --service api
+          railway variable --set "DB_NAME=${DOLLAR}{{Postgres.PGDATABASE}}" --service api
+          railway variable --set "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" --service api
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT: ${{ inputs.environment }}
+
+      - name: Deploy API
+        run: railway up --service api --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT: ${{ inputs.environment }}
