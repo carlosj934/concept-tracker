@@ -1,0 +1,37 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+watchPatterns = [
+  "cmd/**",
+  "internal/**",
+  "config/**",
+  "db/migrations/**",
+  "go.mod",
+  "go.sum",
+  "Dockerfile"
+]
+
+[deploy]
+startCommand = "./ct-api"
+preDeployCommand = "migrate -path db/migrations -database \"$DATABASE_URL\" up"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+region = "us-west"
+
+[deploy.limitOverride.containers]
+cpu = 2
+memoryBytes = 4294967296
+
+[deploy.deploymentTeardown]
+overlapSeconds = 10
+drainSeconds = 30
+
+[environments.staging.deploy]
+restartPolicyType = "NEVER"
+restartPolicyMaxRetries = null
+
+[environments.production.deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
