@@ -45,26 +45,27 @@ jobs:
             echo "Postgres already exists, skipping"
             exit 0
           fi
-          echo "Postgres not found, provisioning..."
           railway add --database postgres
 
-      - name: Wire variables to API service
+      - name: Check and provision API service
         run: |
-          EXISTING=$(railway variable --service api --json | jq -r '.DATABASE_URL // empty')
-          if [ -n "$EXISTING" ]; then
-            echo "Variables already wired, skipping"
+          if railway service status --all --json 2>/dev/null | jq -e '.[] | select(.name == "api")' > /dev/null 2>&1; then
+            echo "API service already exists, skipping"
             exit 0
           fi
-          echo "Wiring variables..."
-
           DOLLAR='$'
-          railway variable --set "DATABASE_URL=${DOLLAR}{{Postgres.DATABASE_URL}}" --service api
-          railway variable --set "DB_HOST=${DOLLAR}{{Postgres.PGHOST}}" --service api
-          railway variable --set "DB_PORT=${DOLLAR}{{Postgres.PGPORT}}" --service api
-          railway variable --set "DB_USER=${DOLLAR}{{Postgres.PGUSER}}" --service api
-          railway variable --set "DB_PASSWORD=${DOLLAR}{{Postgres.PGPASSWORD}}" --service api
-          railway variable --set "DB_NAME=${DOLLAR}{{Postgres.PGDATABASE}}" --service api
-          railway variable --set "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" --service api
+          railway add --service api \
+            -v "DATABASE_URL=${DOLLAR}{{Postgres.DATABASE_URL}}" \
+            -v "DB_HOST=${DOLLAR}{{Postgres.PGHOST}}" \
+            -v "DB_PORT=${DOLLAR}{{Postgres.PGPORT}}" \
+            -v "DB_USER=${DOLLAR}{{Postgres.PGUSER}}" \
+            -v "DB_PASSWORD=${DOLLAR}{{Postgres.PGPASSWORD}}" \
+            -v "DB_NAME=${DOLLAR}{{Postgres.PGDATABASE}}" \
+            -v "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}"
 
       - name: Deploy API
-        run: railway up --service api --detach
+        run: railway up \
+          --service api \
+          --environment "$RAILWAY_ENVIRONMENT" \
+          --project "$RAILWAY_PROJECT_ID" \
+          --detach
