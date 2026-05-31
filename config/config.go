@@ -14,7 +14,7 @@ type Config struct {
 	DBUser     string
 	DBPassword string
 	DBName     string
-	SSLMode string
+	SSLMode    string
 
 	// API
 	ServerPort int64
@@ -78,7 +78,7 @@ func Load() (*Config, error) {
 		DBUser:         dbUser,
 		DBPassword:     dbPassword,
 		DBName:         dbName,
-		SSLMode: sslMode,
+		SSLMode:        sslMode,
 		ServerPort:     serverPortInt,
 		ClerkSecretKey: clerkSecretKey,
 	}
